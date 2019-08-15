@@ -1,5 +1,18 @@
 # -*- coding: utf-8 -*-
 
+#db
+DB_CONFIG = {
+   "host": "localhost",
+   "user": "root",
+   "password": "",
+   "database": "lianjia"
+}
+# DB_CONFIG = {
+#    'host': 'localhost',
+#    'user': 'root',
+#    'password': '',
+#    'database': 'lianjia'
+# }
 # Scrapy settings for lianjia project
 #
 # For simplicity, this file contains only settings considered important or
@@ -66,7 +79,7 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'lianjia.pipelines.CommunityPipeline': 1,
+   'lianjia.pipelines.LianjiaPipeline': 1,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

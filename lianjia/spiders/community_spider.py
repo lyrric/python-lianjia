@@ -24,7 +24,7 @@ class CommunitySpider(scrapy.Spider):
         while i < len(city_urls):
             logging.info('正在解析'+city_names[i]+'，url='+city_urls[i])
             city_full_url = self.base_url + city_urls[i]
-            yield scrapy.Request(url=city_full_url, meta={'base_url': city_full_url},
+            scrapy.Request(url=city_full_url, meta={'base_url': city_full_url},
                                  callback=self.parse_community_index)
             i += 1
 
