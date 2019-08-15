@@ -41,12 +41,12 @@ class LianjiaPipeline(object):
 
     #  存储房源信息
     def save_house(self, item):
-        query_sql = 'select count(*) from house where id = %s'
-        self.cur.execute(query_sql, (item['id']))
-        row = self.cur.fetchone()
-        if row[0] > 0:
-            logging.info('数据重复: ' + item['id'] + ',' + item['title'])
-            return item
+        # query_sql = 'select count(*) from house where id = %s'
+        # self.cur.execute(query_sql, (item['id']))
+        # row = self.cur.fetchone()
+        # if row[0] > 0:
+        #     logging.info('数据重复: ' + item['id'] + ',' + item['title'])
+        #     return item
         sql = 'insert into house(id, community_id, title, price, price_unit, price_per, ' \
               'price_per_unit, type, size, on_sale_date, gmt_create) ' \
               'values(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now())'

@@ -41,9 +41,13 @@ class HourseSpider(scrapy.Spider):
 
     # 解析房源列表
     def parse_house_list(self, response):
-        house_ids = response.xpath('//a[@class="LOGCLICKDATA "]/@data-lj_action_housedel_id').extract()
+        house_ids = response.xpath('//div[@class="title"]/a/@data-housecode').extract()
         for id in house_ids:
-            yield scrapy.Request(url=self.base_url + str(id) + '.html', callback=self.parse_house_detail)
+            query_sql = 'select count(*) amount from house where id = %s'
+            self.cur.execute(query_sql, id)
+            row = self.cur.fetchone()
+            if row['amount'] == 0:
+                yield scrapy.Request(url=self.base_url + str(id) + '.html', callback=self.parse_house_detail)
 
     # 解析房源详情
     def parse_house_detail(self, response):
