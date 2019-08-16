@@ -1,7 +1,9 @@
 import scrapy
+import pymysql
 import json
 import logging
 from lianjia.items import CommunityItem
+from lianjia import settings
 
 """
 爬取所有小区
@@ -10,23 +12,31 @@ from lianjia.items import CommunityItem
 class CommunitySpider(scrapy.Spider):
     name = 'community'
     allowed_domains = ['cd.lianjia.com']
-    start_urls = ['https://cd.lianjia.com/xiaoqu/']
-    base_url = 'https://cd.lianjia.com'
 
-    def __init__(self, name=None, **kwargs):
-        super().__init__(name, **kwargs)
+    start_urls = ['https://cd.lianjia.com/xiaoqu/']
+    community_base_url = 'https://cd.lianjia.com'
+
+    db = pymysql.connect(**settings.DB_CONFIG)
+    cur = db.cursor(cursor=pymysql.cursors.DictCursor)
+    version = 0
 
     def parse(self, response):
+        sql = 'select version from version '
+        self.cur.execute(sql)
+        row = self.cur.fetchone()
+        self.version = int(row['version']) + 1
+        logging.info('当前版本号为:' + str(self.version))
         # 获取成都市所有区县列表
         city_urls = response.xpath('//div[@data-role="ershoufang"]/div/a/@href').extract()
         city_names = response.xpath('//div[@data-role="ershoufang"]/div/a/text()').extract()
         i = 0
         while i < len(city_urls):
             logging.info('正在解析'+city_names[i]+'，url='+city_urls[i])
-            city_full_url = self.base_url + city_urls[i]
-            scrapy.Request(url=city_full_url, meta={'base_url': city_full_url},
-                                 callback=self.parse_community_index)
+            city_full_url = self.community_base_url + city_urls[i]
+            yield scrapy.Request(url=city_full_url, meta={'base_url': city_full_url}, callback=self.parse_community_index)
             i += 1
+        # 完成之后让version + 1
+        self.cur.execute('update version set version = (version + 1) ')
 
     #  解析小区列表第一页，获取页数
     def parse_community_index(self, response):
@@ -42,21 +52,18 @@ class CommunitySpider(scrapy.Spider):
 
     #  解析小区列表页
     def parse_community(self, response):
-        ids = response.xpath('//li[@class="clear xiaoquListItem"]/@data-id').extract()  # 小区ID
+        codes = response.xpath('//li[@class="clear xiaoquListItem"]/@data-id').extract()  # 小区ID
         names = response.xpath('//div[@class="title"]/a/text()').extract()  # 小区名字
-        selling_count_list = response.xpath('//a[@class="totalSellCount"]/span/text()').extract()  # 在售二手房数量
-        sold_avg_price_list = response.xpath('//div[@class="totalPrice"]/span/text()').extract()  # 上月二手房参考均价
+        selling_house_amount_list = response.xpath('//a[@class="totalSellCount"]/span/text()').extract()  # 在售二手房数量
         district_list = response.xpath('//div[@class="positionInfo"]/a[@class="district"]/text()').extract()  # 小区位置
 
         i = 0
-        while i < len(ids):
+        while i < len(codes):
             item = CommunityItem()
-            item['id'] = ids[i]
+            item['code'] = codes[i]
             item['name'] = names[i]
-            item['selling_count'] = selling_count_list[i]
-            item['sold_avg_price'] = sold_avg_price_list[i]
+            item['selling_house_amount'] = selling_house_amount_list[i]
             item['district'] = district_list[i]
-            if item['id'] == '1611062699546':
-                logging.info('发现1611062699546' + names[i] + response.url)
+            item['version'] = self.version
             yield item
             i += 1
