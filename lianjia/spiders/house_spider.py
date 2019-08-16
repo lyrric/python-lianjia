@@ -16,7 +16,7 @@ class HourseSpider(scrapy.Spider):
     cur = db.cursor(cursor=pymysql.cursors.DictCursor)
 
     def start_requests(self):
-        sql = 'select * from community where selling_count <> 0 '
+        sql = 'select * from community where selling_count '
         self.cur.execute(sql)
         rows = self.cur.fetchall()
         for row in rows:
