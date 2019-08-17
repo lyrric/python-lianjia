@@ -2,9 +2,9 @@
 
 #db
 DB_CONFIG = {
-   "host": "localhost",
+   "host": "47.97.215.50",
    "user": "root",
-   "password": "",
+   "password": "xxx1aAxxx!!!",
    "database": "lianjia"
 }
 # DB_CONFIG = {
@@ -60,9 +60,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'lianjia.middlewares.LianjiaSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+   'lianjia.middlewares.LianjiaSpiderMiddleware': 1,
+}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
@@ -72,9 +72,9 @@ ROBOTSTXT_OBEY = False
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+# EXTENSIONS = {
+#    'lianjia.ext.hook_extension.HookExtension': 1,
+# }
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html

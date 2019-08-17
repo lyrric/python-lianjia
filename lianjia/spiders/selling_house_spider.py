@@ -22,6 +22,9 @@ class SellingHouseSpider(scrapy.Spider):
         rows = self.cur.fetchall()
         for row in rows:
             yield scrapy.Request(url=self.base_url + 'c' + row['code'], meta={'code': row['code'], 'name': row['name']}, callback=self.parse_index)
+        item = SellingHouseItem()
+        item['finish'] = True
+        yield item
 
     # 解析列表首页，获取列表页数
     def parse_index(self, response):
@@ -62,4 +65,5 @@ class SellingHouseSpider(scrapy.Spider):
         item['size'] = response.xpath('//div[@class="area"]/div[@class="mainInfo"]/text()').extract()[0]  # 大小
         item['on_sale_date'] = response.xpath('//div[@class="transaction"]/div[@class="content"]/ul/li/span/text()').extract()[1]  # 上架时间
         item['deleted'] = False
+        item['finish'] = False
         yield item

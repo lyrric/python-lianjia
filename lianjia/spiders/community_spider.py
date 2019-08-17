@@ -16,15 +16,21 @@ class CommunitySpider(scrapy.Spider):
     start_urls = ['https://cd.lianjia.com/xiaoqu/']
     community_base_url = 'https://cd.lianjia.com'
 
-    db = pymysql.connect(**settings.DB_CONFIG)
-    cur = db.cursor(cursor=pymysql.cursors.DictCursor)
     version = 0
 
-    def parse(self, response):
+    # 获取当前版本号
+    def get_version(self):
+        db = pymysql.connect(**settings.DB_CONFIG)
+        cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         sql = 'select version from version '
-        self.cur.execute(sql)
-        row = self.cur.fetchone()
-        self.version = int(row['version']) + 1
+        cur.execute(sql)
+        row = cur.fetchone()
+        db.close()
+        cur.close()
+        return int(row['version'])
+
+    def parse(self, response):
+        self.version = self.get_version() + 1
         logging.info('当前版本号为:' + str(self.version))
         # 获取成都市所有区县列表
         city_urls = response.xpath('//div[@data-role="ershoufang"]/div/a/@href').extract()
@@ -35,8 +41,6 @@ class CommunitySpider(scrapy.Spider):
             city_full_url = self.community_base_url + city_urls[i]
             yield scrapy.Request(url=city_full_url, meta={'base_url': city_full_url}, callback=self.parse_community_index)
             i += 1
-        # 完成之后让version + 1
-        self.cur.execute('update version set version = (version + 1) ')
 
     #  解析小区列表第一页，获取页数
     def parse_community_index(self, response):
@@ -56,7 +60,6 @@ class CommunitySpider(scrapy.Spider):
         names = response.xpath('//div[@class="title"]/a/text()').extract()  # 小区名字
         selling_house_amount_list = response.xpath('//a[@class="totalSellCount"]/span/text()').extract()  # 在售二手房数量
         district_list = response.xpath('//div[@class="positionInfo"]/a[@class="district"]/text()').extract()  # 小区位置
-
         i = 0
         while i < len(codes):
             item = CommunityItem()
@@ -65,5 +68,6 @@ class CommunitySpider(scrapy.Spider):
             item['selling_house_amount'] = selling_house_amount_list[i]
             item['district'] = district_list[i]
             item['version'] = self.version
+            item['finish'] = False
             yield item
             i += 1

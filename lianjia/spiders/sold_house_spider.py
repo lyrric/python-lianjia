@@ -22,6 +22,9 @@ class SoldHouseSpider(scrapy.Spider):
         rows = self.cur.fetchall()
         for row in rows:
             yield scrapy.Request(url=self.base_url + 'c' + row['code'], meta=row, callback=self.parse_index)
+        item = SoldHouseItem()
+        item['finish'] = True
+        yield item
 
     # 解析列表首页，获取列表页数
     def parse_index(self, response):
@@ -76,4 +79,5 @@ class SoldHouseSpider(scrapy.Spider):
         item['sold_price_per'] = response.xpath('//div[@class="price"]/b/text()').extract()[0]  # 售出单价
         deal_date = response.meta['deal_date']  # 售出日期
         item['sold_date'] = deal_date.replace('.', '-')
+        item['finish'] = False
         yield item

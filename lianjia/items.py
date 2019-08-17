@@ -20,6 +20,7 @@ class CommunityItem(scrapy.Item):
     district = scrapy.Field()  # 小区位置
     gmt_create = scrapy.Field()  # 采集时间
     version = scrapy.Field()  # 版本号
+    finish = scrapy.Field()  # 表示数据已爬取完毕，执行保存操作
 
 
 # 售卖中的房源信息
@@ -36,6 +37,7 @@ class SellingHouseItem(scrapy.Item):
     deleted = scrapy.Field()  # 是否下架
     gmt_create = scrapy.Field()  # 采集时间
     gmt_update = scrapy.Field()  # 更新时间（最新一次采集时间）
+    finish = scrapy.Field()  # 表示数据已爬取完毕，执行保存操作
 
 
 # 售出的房源信息
@@ -53,3 +55,4 @@ class SoldHouseItem(scrapy.Item):
     deleted = scrapy.Field()  # 是否下架
     sold_date = scrapy.Field()  # 售出时间
     gmt_create = scrapy.Field()  # 采集时间
+    finish = scrapy.Field()  # 表示数据已爬取完毕，执行保存操作
