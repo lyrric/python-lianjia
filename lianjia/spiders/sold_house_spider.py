@@ -29,6 +29,13 @@ class SoldHouseSpider(scrapy.Spider):
     # 解析列表首页，获取列表页数
     def parse_index(self, response):
         item = CommunityItem()
+        # 如果该小区没有售出房源，解析首页的时候会直接跳转到成交首页，需要特殊判断
+        if len(response.xpath('//span[@class="checkbox checked"]').extract()) == 0:
+            item['sold_house_amount'] = 0
+            item['code'] = response.meta['code']
+            item['name'] = response.meta['name']
+            item['version'] = response.meta['version']
+            return item
         sold_house_amount = response.xpath('//div[@class="total fl"]/span/text()').extract()[0]
         item['sold_house_amount'] = sold_house_amount
         item['code'] = response.meta['code']
