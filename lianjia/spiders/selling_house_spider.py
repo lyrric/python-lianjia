@@ -24,6 +24,7 @@ LEFT JOIN selling_house house on house.community_code = community.code
 where selling_house_amount <> 0 
 GROUP BY community.code,community.name,community.selling_house_amount) t
 where selling_house_amount > amount
+order by (selling_house_amount-amount) desc
         '''
         self.cur.execute(sql)
         rows = self.cur.fetchall()
@@ -59,13 +60,26 @@ where selling_house_amount > amount
     # 解析房源详情
     def parse_house_detail(self, response):
         item = SellingHouseItem()
-        item['code'] = response.xpath(
-            '//div[@class="btnContainer  LOGVIEWDATA LOGVIEW"]/@data-lj_action_resblock_id').extract()[0]  # 房源code
-        item['community_code'] = response.xpath(
-            '//div[@class="btnContainer  LOGVIEWDATA LOGVIEW"]/@data-lj_action_housedel_id').extract()[0]  # 小区code
+        if len(response.xpath('//div[@class="btnContainer disable LOGVIEWDATA LOGVIEW"]/@data-lj_action_resblock_id').extract()) != 0:
+            item['code'] = response.xpath('//div[@class="btnContainer disable LOGVIEWDATA LOGVIEW"]/@data-lj_action_resblock_id').extract()[0]
+            item['community_code'] = response.xpath(
+                '//div[@class="btnContainer disable LOGVIEWDATA LOGVIEW"]/@data-lj_action_housedel_id').extract()[0]  # 小区code
+            item['price'] = response.xpath('//div[@class="price isRemove"]/span[@class="total"]/text()').extract()[0]  # 价格
+            item['price_unit'] = response.xpath('//div[@class="price isRemove"]/span[@class="unit"]/span/text()').extract()[
+                0]  # 价格单位（万）
+            item['finish'] = True
+        else:
+            item['code'] = response.xpath(
+                '//div[@class="btnContainer  LOGVIEWDATA LOGVIEW"]/@data-lj_action_resblock_id').extract()[0]  # 房源code
+            item['community_code'] = response.xpath(
+                '//div[@class="btnContainer  LOGVIEWDATA LOGVIEW"]/@data-lj_action_housedel_id').extract()[0]  # 小区code
+            item['price'] = response.xpath('//div[@class="price "]/span[@class="total"]/text()').extract()[0]  # 价格
+            item['price_unit'] = response.xpath('//div[@class="price "]/span[@class="unit"]/span/text()').extract()[
+                0]  # 价格单位（万）
+            item['finish'] = False
         item['title'] = response.xpath('//h1[@class="main"]/text()').extract()[0]  # 标题
-        item['price'] = response.xpath('//div[@class="price "]/span[@class="total"]/text()').extract()[0]  # 价格
-        item['price_unit'] = response.xpath('//div[@class="price "]/span[@class="unit"]/span/text()').extract()[0]  # 价格单位（万）
+        item['title'] = item['title'].replace('{', '')
+        item['title'] = item['title'].replace('}', '')
         item['price_per'] = response.xpath('//span[@class="unitPriceValue"]/text()').extract()[0]  # 单价
         item['type'] = response.xpath('//div[@class="room"]/div[@class="mainInfo"]/text()').extract()[0]  # 两室一厅
         item['size'] = response.xpath('//div[@class="area"]/div[@class="mainInfo"]/text()').extract()[0]  # 大小

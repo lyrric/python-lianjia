@@ -81,4 +81,12 @@ class SoldHouseSpider(scrapy.Spider):
         deal_date = response.meta['deal_date']  # 售出日期
         item['sold_date'] = deal_date.replace('.', '-')
         item['finish'] = False
+        item['on_sale_date'] = item['on_sale_date'].replace(' ', '')
+        item['selling_price'] = item['selling_price'].replace(' ', '')
+        if item['selling_price'] == '暂无数据':
+            item['selling_price'] = 0
+        if item['on_sale_date'] == '暂无数据':
+            item['on_sale_date'] = 'null'
+        else:
+            item['on_sale_date'] = '"' + item['on_sale_date'] + '"'
         yield item
