@@ -16,15 +16,19 @@ class SellingHouseSpider(scrapy.Spider):
     cur = db.cursor(cursor=pymysql.cursors.DictCursor)
 
     def start_requests(self):
-        sql = 'select * from community where selling_house_amount ' \
-              '<> 0 and version = (select version from version limit 1)'
+        sql = '''
+        SELECT * FROM(
+select community.code,community.name,community.selling_house_amount, count(*) amount 
+from community 
+LEFT JOIN selling_house house on house.community_code = community.code
+where selling_house_amount <> 0 
+GROUP BY community.code,community.name,community.selling_house_amount) t
+where selling_house_amount > amount
+        '''
         self.cur.execute(sql)
         rows = self.cur.fetchall()
         for row in rows:
             yield scrapy.Request(url=self.base_url + 'c' + row['code'], meta={'code': row['code'], 'name': row['name']}, callback=self.parse_index)
-        item = SellingHouseItem()
-        item['finish'] = True
-        yield item
 
     # 解析列表首页，获取列表页数
     def parse_index(self, response):
@@ -47,6 +51,8 @@ class SellingHouseSpider(scrapy.Spider):
     # 解析房源列表
     def parse_house_list(self, response):
         house_codes = response.xpath('//div[@class="title"]/a/@data-housecode').extract()
+        if len(house_codes) == 0:
+            house_codes = response.xpath('//div[@class="title"]/a/@data-lj_action_housedel_id').extract()
         for code in house_codes:
             yield scrapy.Request(url=self.base_url + str(code) + '.html', callback=self.parse_house_detail)
 

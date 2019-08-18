@@ -16,15 +16,15 @@ class SoldHouseSpider(scrapy.Spider):
     cur = db.cursor(cursor=pymysql.cursors.DictCursor)
 
     def start_requests(self):
-        sql = 'select * from community where selling_house_amount ' \
-              '<> 0 and version = (select version from version limit 1)'
+        sql = '''
+        select * from community where sold_house_amount is null
+        '''
+        # sql = 'select * from community where selling_house_amount ' \
+        #       '<> 0 and version = (select version from version limit 1)'
         self.cur.execute(sql)
         rows = self.cur.fetchall()
         for row in rows:
             yield scrapy.Request(url=self.base_url + 'c' + row['code'], meta=row, callback=self.parse_index)
-        item = SoldHouseItem()
-        item['finish'] = True
-        yield item
 
     # 解析列表首页，获取列表页数
     def parse_index(self, response):
@@ -61,6 +61,7 @@ class SoldHouseSpider(scrapy.Spider):
         i = 0
         while i < len(house_urls):
             yield scrapy.Request(house_urls[i], meta={'deal_date': deal_dates[i]}, callback=self.parse_house_detail)
+            i += 1
 
     # 解析房源详情
     def parse_house_detail(self, response):

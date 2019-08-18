@@ -39,7 +39,7 @@ class LianjiaPipeline(object):
             self.db.commit()
             item = CommunityItem()
         elif spider.name == SellingHouseSpider.name:
-            item = SellingHouseItem
+            item = SellingHouseItem()
         elif spider.name == SoldHouseSpider.name:
             item = SoldHouseItem()
         item['finish'] = True
@@ -112,8 +112,9 @@ class LianjiaPipeline(object):
             if row['amount'] == 0:
                 self.list.append(item)
             else:
+                return
                 sql = 'update selling_house set community_code = %s, title = %s, price = %s, price_per = %s, ' \
-                      'price_unit = %s, type = %s, size = %s ' \
+                      'price_unit = %s, type = %s, size = %s ,' \
                       ' on_sale_date = %s, deleted = %s, gmt_update = now() where code = %s '
                 self.cur.execute(sql,
                                  (
@@ -145,9 +146,16 @@ class LianjiaPipeline(object):
     #  存储售出的房源信息
     def save_sold_house(self, item):
         if not item['finish']:
+            item['on_sale_date'] = item['on_sale_date'].replace(' ', '')
+            item['selling_price'] = item['selling_price'].replace(' ', '')
             logging.info("售出房源code:" + item['code'] + ', ' + item['title'])
             if item['selling_price'] == '暂无数据':
                 item['selling_price'] = 0
+            if item['on_sale_date'] == '暂无数据':
+                item['on_sale_date'] = 'null'
+            else:
+                item['on_sale_date'] = '"'+ item['on_sale_date']+'"'
+
             query_sql = 'select count(*) amount from sold_house where code = %s'
             self.cur.execute(query_sql, item['code'])
             row = self.cur.fetchone()
@@ -159,7 +167,7 @@ class LianjiaPipeline(object):
                   'values'
             i = 0
             while i < len(self.list):
-                sql += '("{}", "{}", "{}", {}, {}, "{}", "{}", "{}", "{}", "{}", "{}", now())'
+                sql += '("{}", "{}", "{}", {}, {}, "{}", "{}", "{}", "{}", {}, "{}", now())'
                 if i != (len(self.list)-1):
                     sql += ','
                 sql = sql.format(self.list[i]['code'], self.list[i]['community_code'], self.list[i]['title'], self.list[i]['selling_price'],
