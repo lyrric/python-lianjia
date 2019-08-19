@@ -19,7 +19,7 @@ class CommunitySpider(scrapy.Spider):
     start_urls = ['https://cd.lianjia.com/xiaoqu/']
     community_base_url = 'https://cd.lianjia.com'
 
-    version = 0
+    version = 0  # 当前版本号
 
     def __init__(self, name=None, db_password=None, **kwargs):
         if db_password is not None and db_password != '':

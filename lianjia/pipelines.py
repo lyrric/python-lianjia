@@ -22,7 +22,8 @@ class LianjiaPipeline(object):
 
     db = None
     cur = None
-    random = uniform(0, 99)
+
+    amount = 0  # 已保存数据
 
     def __init__(self) -> None:
         dispatcher.connect(self.spider_closed, signal=signals.spider_closed)
@@ -63,7 +64,7 @@ class LianjiaPipeline(object):
     # 存储小区信息
     def save_community(self, item):
         if not item['finish']:
-            #logging.info("小区："+item['name'])
+            #logging.debug("小区："+item['name'])
             query_sql = 'select count(*) amount from community where id = %s and version = %s'
             self.cur.execute(query_sql, (item['code'], item['version']))
             row = self.cur.fetchone()
@@ -72,6 +73,7 @@ class LianjiaPipeline(object):
                 logging.info('数据重复: ' + item['code'] + ',' + item['name'])
                 return item
             self.list.append(item)
+            self.amount += 1
         if len(self.list) == 30 or (item['finish'] and len(self.list) != 0):
             i = 0
             sql = 'insert into  community' \
@@ -86,15 +88,11 @@ class LianjiaPipeline(object):
             self.cur.execute(sql)
             self.db.commit()
             self.list.clear()
-            logging.info('插入数据----------------------------------------')
+            logging.info("已保存数据:" + str(self.amount))
             return item
 
     # 存储小区信息的售出数量
     def save_community_sold(self, item):
-        try:
-            logging.info("小区：" + item['name'] + '，售出数量:'+item['sold_house_amount'])
-        except Exception as e:
-            logging.error(e)
         sql = 'update community set sold_house_amount = %s where code = %s and version = %s'
         self.cur.execute(sql,
                          (
@@ -107,14 +105,14 @@ class LianjiaPipeline(object):
     #  存储售卖中的房源信息
     def save_selling_house(self, item):
         if not item['finish']:
-            #logging.info("售卖中房源code:" + item['code'] + ', ' + item['title'])
+            #logging.debug("售卖中房源code:" + item['code'] + ', ' + item['title'])
             query_sql = 'select count(*) amount from selling_house where code = %s'
             self.cur.execute(query_sql, item['code'])
             row = self.cur.fetchone()
             if row['amount'] == 0:
                 self.list.append(item)
+                self.amount += 1
             else:
-                return
                 sql = 'update selling_house set community_code = %s, title = %s, price = %s, price_per = %s, ' \
                       'price_unit = %s, type = %s, size = %s ,' \
                       ' on_sale_date = %s, deleted = %s, gmt_update = now() where code = %s '
@@ -144,21 +142,22 @@ class LianjiaPipeline(object):
                 self.cur.execute(sql)
                 self.db.commit()
                 self.list.clear()
+                logging.info("已保存数据:" + str(self.amount))
             except Exception as e:
                 logging.error(e)
                 raise e
-            logging.info('插入数据----------------------------------------')
         return item
 
     #  存储售出的房源信息
     def save_sold_house(self, item):
         if not item['finish']:
-            logging.info("售出房源code:" + item['code'] + ', ' + item['title'])
+            #logging.debug("售出房源code:" + item['code'] + ', ' + item['title'])
             query_sql = 'select count(*) amount from sold_house where code = %s'
             self.cur.execute(query_sql, item['code'])
             row = self.cur.fetchone()
             if row['amount'] == 0:
                 self.list.append(item)
+                self.amount += 1
         if len(self.list) == 30 or (item['finish'] and len(self.list) != 0):
             sql = 'insert into sold_house(code, community_code, title, selling_price, ' \
                   'sold_price, sold_price_per, price_unit, type, size, on_sale_date, sold_date, gmt_create ) ' \
@@ -175,4 +174,5 @@ class LianjiaPipeline(object):
             self.cur.execute(sql)
             self.db.commit()
             self.list.clear()
+            logging.info("已保存数据:"+str(self.amount))
         return item
