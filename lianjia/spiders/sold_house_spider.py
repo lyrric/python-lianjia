@@ -24,7 +24,7 @@ class SoldHouseSpider(scrapy.Spider):
         super().__init__(name, **kwargs)
 
     def start_requests(self):
-        db = pymysql.connect(settings.DB_HOST, settings.DB_USER, settings.DB_PASSWORD, settings.DB_DATABASE)
+        db = pymysql.connect(**settings.DB_CONFIG)
         cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         sql = '''
        select * from community where version = (select version from version)

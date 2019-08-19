@@ -31,7 +31,7 @@ class CommunitySpider(scrapy.Spider):
 
     # 获取当前版本号
     def get_version(self):
-        db = pymysql.connect(settings.DB_HOST, settings.DB_USER, settings.DB_PASSWORD, settings.DB_DATABASE)
+        db = pymysql.connect(**settings.DB_CONFIG)
         cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         sql = 'select version from version '
         cur.execute(sql)
