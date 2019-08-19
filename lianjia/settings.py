@@ -2,9 +2,9 @@
 
 #db
 DB_CONFIG = {
-   "host": "47.97.215.50",
+   "host": "localhost",
    "user": "root",
-   "password": "xxx1aAxxx!!!",
+   "password": "",
    "database": "lianjia"
 }
 # DB_CONFIG = {
