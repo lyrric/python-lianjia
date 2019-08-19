@@ -1,5 +1,7 @@
 import scrapy
 import pymysql
+from scrapy.utils.project import get_project_settings
+
 from lianjia import settings
 import json
 import logging
@@ -12,17 +14,25 @@ class SoldHouseSpider(scrapy.Spider):
     name = 'sold_house'
 
     base_url = 'https://cd.lianjia.com/chengjiao/'
-    db = pymysql.connect(**settings.DB_CONFIG)
-    cur = db.cursor(cursor=pymysql.cursors.DictCursor)
+
+    def __init__(self, name=None, db_password=None, **kwargs):
+        if db_password is not None and db_password != '':
+            settings_copy = get_project_settings()
+            db_conf = settings_copy.get('DB_CONFIG')
+            db_conf['password'] = db_password
+            settings_copy.set('DB_CONFIG', db_conf)
+        super().__init__(name, **kwargs)
 
     def start_requests(self):
+        db = pymysql.connect(settings.DB_HOST, settings.DB_USER, settings.DB_PASSWORD, settings.DB_DATABASE)
+        cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         sql = '''
        select * from community where version = (select version from version)
         '''
-        # sql = 'select * from community where selling_house_amount ' \
-        #       '<> 0 and version = (select version from version limit 1)'
-        self.cur.execute(sql)
-        rows = self.cur.fetchall()
+        cur.execute(sql)
+        rows = cur.fetchall()
+        cur.close()
+        db.close()
         for row in rows:
             yield scrapy.Request(url=self.base_url + 'c' + row['code'], meta=row, callback=self.parse_index)
 

@@ -20,12 +20,14 @@ from lianjia.spiders.sold_house_spider import SoldHouseSpider
 
 class LianjiaPipeline(object):
 
-    db = pymysql.connect(**settings.DB_CONFIG)
-    cur = db.cursor(cursor=pymysql.cursors.DictCursor)
+    db = None
+    cur = None
     random = uniform(0, 99)
 
     def __init__(self) -> None:
         dispatcher.connect(self.spider_closed, signal=signals.spider_closed)
+        self.db = pymysql.connect(**settings.DB_CONFIG)
+        self.cur = self.db.cursor(cursor=pymysql.cursors.DictCursor)
 
     list = []
 

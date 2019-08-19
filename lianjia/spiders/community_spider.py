@@ -2,6 +2,9 @@ import scrapy
 import pymysql
 import json
 import logging
+
+from scrapy.utils.project import get_project_settings
+
 from lianjia.items import CommunityItem
 from lianjia import settings
 
@@ -18,9 +21,17 @@ class CommunitySpider(scrapy.Spider):
 
     version = 0
 
+    def __init__(self, name=None, db_password=None, **kwargs):
+        if db_password is not None and db_password != '':
+            settings_copy = get_project_settings()
+            db_conf = settings_copy.get('DB_CONFIG')
+            db_conf['password'] = db_password
+            settings_copy.set('DB_CONFIG', db_conf)
+        super().__init__(name, **kwargs)
+
     # 获取当前版本号
     def get_version(self):
-        db = pymysql.connect(**settings.DB_CONFIG)
+        db = pymysql.connect(settings.DB_HOST, settings.DB_USER, settings.DB_PASSWORD, settings.DB_DATABASE)
         cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         sql = 'select version from version '
         cur.execute(sql)

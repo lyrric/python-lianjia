@@ -2,17 +2,11 @@
 
 #db
 DB_CONFIG = {
-   "host": "localhost",
-   "user": "root",
-   "password": "",
-   "database": "lianjia"
+   'host': 'localhost',
+   'user': 'root',
+   'password': '',
+   'database': 'lianjia'
 }
-# DB_CONFIG = {
-#    'host': 'localhost',
-#    'user': 'root',
-#    'password': '',
-#    'database': 'lianjia'
-# }
 # Scrapy settings for lianjia project
 #
 # For simplicity, this file contains only settings considered important or
