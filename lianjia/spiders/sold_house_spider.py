@@ -17,7 +17,7 @@ class SoldHouseSpider(scrapy.Spider):
 
     def start_requests(self):
         sql = '''
-        select * from community where sold_house_amount is null
+       select * from community where version = (select version from version)
         '''
         # sql = 'select * from community where selling_house_amount ' \
         #       '<> 0 and version = (select version from version limit 1)'

@@ -17,14 +17,7 @@ class SellingHouseSpider(scrapy.Spider):
 
     def start_requests(self):
         sql = '''
-        SELECT * FROM(
-select community.code,community.name,community.selling_house_amount, count(*) amount 
-from community 
-LEFT JOIN selling_house house on house.community_code = community.code
-where selling_house_amount <> 0 
-GROUP BY community.code,community.name,community.selling_house_amount) t
-where selling_house_amount > amount
-order by (selling_house_amount-amount) desc
+            select * from community where selling_house_amount != 0 and version = (select version from version) 
         '''
         self.cur.execute(sql)
         rows = self.cur.fetchall()
@@ -67,7 +60,7 @@ order by (selling_house_amount-amount) desc
             item['price'] = response.xpath('//div[@class="price isRemove"]/span[@class="total"]/text()').extract()[0]  # 价格
             item['price_unit'] = response.xpath('//div[@class="price isRemove"]/span[@class="unit"]/span/text()').extract()[
                 0]  # 价格单位（万）
-            item['finish'] = True
+            item['deleted'] = True
         else:
             item['code'] = response.xpath(
                 '//div[@class="btnContainer  LOGVIEWDATA LOGVIEW"]/@data-lj_action_resblock_id').extract()[0]  # 房源code
@@ -76,7 +69,7 @@ order by (selling_house_amount-amount) desc
             item['price'] = response.xpath('//div[@class="price "]/span[@class="total"]/text()').extract()[0]  # 价格
             item['price_unit'] = response.xpath('//div[@class="price "]/span[@class="unit"]/span/text()').extract()[
                 0]  # 价格单位（万）
-            item['finish'] = False
+            item['deleted'] = False
         item['title'] = response.xpath('//h1[@class="main"]/text()').extract()[0]  # 标题
         item['title'] = item['title'].replace('{', '')
         item['title'] = item['title'].replace('}', '')
@@ -84,6 +77,5 @@ order by (selling_house_amount-amount) desc
         item['type'] = response.xpath('//div[@class="room"]/div[@class="mainInfo"]/text()').extract()[0]  # 两室一厅
         item['size'] = response.xpath('//div[@class="area"]/div[@class="mainInfo"]/text()').extract()[0]  # 大小
         item['on_sale_date'] = response.xpath('//div[@class="transaction"]/div[@class="content"]/ul/li/span/text()').extract()[1]  # 上架时间
-        item['deleted'] = False
         item['finish'] = False
         yield item

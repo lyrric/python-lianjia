@@ -81,7 +81,6 @@ class LianjiaPipeline(object):
                     sql += ','
                 sql = sql.format(self.list[i]['code'],  self.list[i]['name'], self.list[i]['selling_house_amount'], self.list[i]['district'], self.list[i]['version'])
                 i += 1
-            logging.info("sql=" + sql)
             self.cur.execute(sql)
             self.db.commit()
             self.list.clear()
