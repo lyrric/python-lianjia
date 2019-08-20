@@ -36,15 +36,25 @@ class LianjiaPipeline(object):
     def spider_closed(self, spider):
         logging.info('数据采集完毕---------------------------------------------------执行保存操作')
         item = None
+        sql = None
         if spider.name == CommunitySpider.name:
             # 完成之后让version + 1
-            self.cur.execute('update version set version = (version + 1) ')
-            self.db.commit()
+            sql = 'update version set version = (version + 1) '
             item = CommunityItem()
         elif spider.name == SellingHouseSpider.name:
+            # 统计小区的挂牌平均价格
+            sql = 'update community c set selling_avg_price = (select AVG(price_per) avg_price_per ' \
+                  'from selling_house where community_code = c.code and deleted = false ) ' \
+                  'where version = (select version from version)'
             item = SellingHouseItem()
         elif spider.name == SoldHouseSpider.name:
+            # 统计小区的售出的平均价格
+            sql = 'update community c set sold_avg_price = (select AVG(sold_price_per) avg_price_per from sold_house ' \
+                  'where community_code = c.code ) ' \
+                  'where version = (select version from version) '
             item = SoldHouseItem()
+        self.cur.execute(sql)
+        self.db.commit()
         item['finish'] = True
         self.process_item(item, spider)
         self.db.close()
