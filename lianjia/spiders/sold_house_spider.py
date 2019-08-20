@@ -88,6 +88,9 @@ class SoldHouseSpider(scrapy.Spider):
         item['community_code'] = response.xpath(
             '//div[@class="house-title LOGVIEWDATA LOGVIEW"]/@data-lj_action_housedel_id').extract()[0]  # 小区code
         item['title'] = response.xpath('//div[@class="wrapper"]/text()').extract()[0]  # 标题
+        item['title'] = item['title'].replace('{', '')
+        item['title'] = item['title'].replace('}', '')
+        item['title'] = item['title'].replace('"', ' ')
         item['selling_price'] = response.xpath('//div[@class="msg"]/span/label/text()').extract()[0]  # 挂牌价格
         item['sold_price'] = response.xpath('//span[@class="dealTotalPrice"]/i/text()').extract()[0]  # 售出价格
         item['price_unit'] = response.xpath('//span[@class="dealTotalPrice"]/text()').extract()[0]  # 价格单位（万）
