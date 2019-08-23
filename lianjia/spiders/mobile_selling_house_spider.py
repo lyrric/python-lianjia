@@ -82,12 +82,14 @@ class SellingHouseSpider(scrapy.Spider):
         item['title'] = item['title'].replace('}', '')
         item['title'] = item['title'].replace('"', ' ')
         price = response.xpath('//ul[@class="house_description big lightblack lazyload_ulog"]/li/text()').extract()[0] # 单价(16,060元/平)
-        price = price[0, price.find('元')]
+        price = price[0: price.find('元')]
         price = price.replace(',' '')
         item['price_per'] = price
+        item['type'] = response.xpath('//div[@class="similar_data_detail"]/p/text()').extract()[2]  # 两室一厅
+        item['size'] = response.xpath('//div[@class="similar_data_detail"]/p/text()').extract()[4]  # 大小
 
-        item['type'] = response.xpath('//div[@class="room"]/div[@class="mainInfo"]/text()').extract()[0]  # 两室一厅
-        item['size'] = response.xpath('//div[@class="area"]/div[@class="mainInfo"]/text()').extract()[0]  # 大小
-        item['on_sale_date'] = response.xpath('//div[@class="transaction"]/div[@class="content"]/ul/li/span/text()').extract()[1]  # 上架时间
+        on_sale_date = response.xpath('//ul[@class="house_description big lightblack lazyload_ulog"]/li/text()').extract()[1] # 上架时间
+        on_sale_date = on_sale_date.replace('.', '-')
+        item['on_sale_date'] = on_sale_date
         item['finish'] = False
         yield item
