@@ -39,7 +39,7 @@ class LianjiaPipeline(object):
         sql = None
         if spider.name == CommunitySpider.name:
             # 完成之后让version + 1
-            sql = 'update version set version = (version + 1) '
+            sql = 'update version set version = (version + 1), update_time = now()'
             item = CommunityItem()
         elif spider.name == SellingHouseSpider.name:
             # 统计小区的挂牌平均价格

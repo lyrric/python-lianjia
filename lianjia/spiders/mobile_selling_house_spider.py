@@ -11,7 +11,7 @@ from lianjia.items import SellingHouseItem
 """
 class SellingHouseSpider(scrapy.Spider):
 
-    name = 'selling_house'
+    name = 'mobile_selling_house'
 
     base_url = 'https://cd.lianjia.com/ershoufang/'
 
