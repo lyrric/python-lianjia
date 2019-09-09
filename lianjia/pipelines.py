@@ -122,16 +122,16 @@ class LianjiaPipeline(object):
             if row['amount'] == 0:
                 self.list.append(item)
                 self.amount += 1
-            else:
-                sql = 'update selling_house set community_code = %s, title = %s, price = %s, price_per = %s, ' \
-                      'price_unit = %s, type = %s, size = %s ,' \
-                      ' on_sale_date = %s, deleted = %s, gmt_update = now() where code = %s '
-                self.cur.execute(sql,
-                                 (
-                                     item['community_code'], item['title'], item['price'],
-                                     item['price_per'], item['price_unit'], item['type'], item['size'],
-                                     item['on_sale_date'], item['deleted'], item['code']))
-                self.db.commit()
+            # else:
+            #     sql = 'update selling_house set community_code = %s, title = %s, price = %s, price_per = %s, ' \
+            #           'price_unit = %s, type = %s, size = %s ,' \
+            #           ' on_sale_date = %s, deleted = %s, gmt_update = now() where code = %s '
+            #     self.cur.execute(sql,
+            #                      (
+            #                          item['community_code'], item['title'], item['price'],
+            #                          item['price_per'], item['price_unit'], item['type'], item['size'],
+            #                          item['on_sale_date'], item['deleted'], item['code']))
+            #     self.db.commit()
 
         if len(self.list) == 30 or (item['finish'] and len(self.list) != 0):
             try:
